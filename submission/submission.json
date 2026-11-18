@@ -1,12 +1,17 @@
 {
-  "team": "",
-  "members": [],
-  "incident": "",
-  "decision_v1": "",
-  "decision_v2": "",
+  "team": "K5-L3A-DAY10-ABC-PoCtoPilotGate1",
+  "members": [
+    "DaoTruongVu-2A202603721",
+    "HoSyTung-2A202603650",
+    "NguyenNhoTrong-2A202603666",
+    "BuiQuangHieu-2A202603639"
+  ],
+  "incident": "S1",
+  "decision_v1": "Cải tiến thêm",
+  "decision_v2": "Tiếp tục",
   "three_lines": {
-    "environment_assumption": "",
-    "reduce_or_prevent": "",
-    "measure_in_pilot": ""
+    "environment_assumption": "tracking có status, delivered_date, delay_cause, parcel và carrier đúng, đủ và cập nhật trước khi trợ lý ra quyết định; dữ liệu thật có thể thiếu hoặc trễ.",
+    "reduce_or_prevent": "Trong các nhánh đã biết, gate thực sự ngăn thao tác hoàn tiền/lỗi hãng khi delivered thiếu ngày, ticket lệch tracking hoặc carrier đã chạm cap; nó chỉ giảm rủi ro nếu dữ liệu đầu vào hoặc nhánh lỗi chưa biết là sai.",
+    "measure_in_pilot": "Đo wrongful refund, wrongful carrier fault, PII outbound, queue/wait, chi phí-ROI và carrier_faults_max_7d theo kho/hãng trong pilot có người duyệt."
   }
 }

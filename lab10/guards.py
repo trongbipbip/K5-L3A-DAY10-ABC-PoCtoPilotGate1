@@ -29,8 +29,22 @@ lab10.helpers: db_delay_days, ticket_parcel, effective_policy, entitlement_vnd, 
 
 Mặc định dưới đây cho qua tất cả (= mốc base).
 """
+import re
+
 from . import helpers as H  # noqa: F401
 from .tools import Verdict
+
+
+_CLAIMED_DELAY = re.compile(
+    r"(?:trễ|tre|chậm|muộn|late|delay(?:ed)?)\D{0,24}?"
+    r"(\d{1,3})\s*(?:ngày|ngay|days?|hôm)",
+    re.I,
+)
+
+
+def _claimed_delay_days(text):
+    match = _CLAIMED_DELAY.search(text or "")
+    return int(match.group(1)) if match else None
 
 
 def pre_guard(ctx):
@@ -39,6 +53,31 @@ def pre_guard(ctx):
 
     if policy is None:
         return Verdict.escalate("Không tìm thấy chính sách hoàn tiền đang hiệu lực")
+
+    order_id = ctx.ticket.get("order_id")
+    order = ctx.tools.lookup_order(order_id) if order_id else None
+    claimed_days = _claimed_delay_days(ctx.ticket.get("text", ""))
+    if order is not None and claimed_days is not None:
+        parcel = H.ticket_parcel(order, ctx.ticket, ctx.as_of)
+        if parcel is not None:
+            tracked_days = H.db_delay_days(parcel, ctx.as_of)
+            if claimed_days != tracked_days:
+                matched = _CLAIMED_DELAY.search(ctx.ticket.get("text", ""))
+                neutral_text = re.sub(
+                    r"\d{1,3}\s*(?:ngày|ngay|days?|hôm)",
+                    "",
+                    matched.group(0),
+                    flags=re.I,
+                )
+                ctx.log(
+                    "ticket_tracking_mismatch",
+                    claimed_delay_days=claimed_days,
+                    tracking_delay_days=tracked_days,
+                )
+                return Verdict.rewrite(
+                    "Loại số ngày tự khai để agent dùng tracking có thẩm quyền",
+                    ctx.ticket["text"].replace(matched.group(0), neutral_text, 1),
+                )
 
     # Ghim phiên bản theo ngày hiệu lực, thay vì tin cờ index_active.
     return Verdict.allow(policy_id=policy["policy_id"])
@@ -57,6 +96,12 @@ def write_gate(ctx, action):
             return Verdict.escalate("Không tìm thấy chính sách hiệu lực để xác minh tiền hoàn")
 
         parcel = H.ticket_parcel(order, ctx.ticket, ctx.as_of)
+        if parcel is None:
+            return Verdict.escalate("Không xác minh được kiện hàng trước khi hoàn tiền")
+        if parcel.get("status") == "DELIVERED" and not parcel.get("delivered_date"):
+            return Verdict.escalate(
+                "Tracking ghi đã giao nhưng thiếu ngày giao; chuyển người duyệt"
+            )
         delay_days = H.db_delay_days(parcel, ctx.as_of)
         cause = parcel.get("delay_cause") or ("CARRIER" if delay_days > 0 else None)
         expected = H.entitlement_vnd(policy, order, delay_days, cause)
@@ -84,6 +129,11 @@ def write_gate(ctx, action):
         if policy is None or parcel is None:
             return Verdict.deny("Thiếu dữ liệu để xác minh lỗi hãng")
 
+        if parcel.get("status") == "DELIVERED" and not parcel.get("delivered_date"):
+            return Verdict.deny(
+                "Tracking ghi đã giao nhưng thiếu ngày giao; không ghi lỗi hãng tự động"
+            )
+
         delay_days = H.db_delay_days(parcel, ctx.as_of)
         recorded_cause = parcel.get("delay_cause")
         supported = (
@@ -99,6 +149,19 @@ def write_gate(ctx, action):
                 recorded_cause=recorded_cause,
             )
             return Verdict.deny("Tracking không đủ căn cứ để ghi lỗi cho hãng")
+
+        max_strikes = ctx.tools.ops_limits().get("max_auto_strikes_per_carrier_per_day")
+        existing_strikes = len(ctx.tools.fault_rows(carrier_id=parcel["carrier_id"]))
+        if max_strikes is not None and existing_strikes >= max_strikes:
+            ctx.log(
+                "carrier_fault_cap_reached",
+                carrier_id=parcel["carrier_id"],
+                existing_strikes=existing_strikes,
+                cap=max_strikes,
+            )
+            return Verdict.deny(
+                "Đã đạt trần lỗi tự động của hãng trong ngày; chuyển người duyệt"
+            )
 
         # Agent có thể chọn kiện đầu tiên nhưng gắn số ngày trễ của kiện khác.
         # Chuẩn hóa lệnh theo kiện trễ nhất và dữ liệu tracking có thẩm quyền.

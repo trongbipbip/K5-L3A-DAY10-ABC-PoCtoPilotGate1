@@ -19,7 +19,20 @@ def escalation_rate(trials):
     return sum(t["status"] == "escalated" for t in trials) / max(1, len(trials))
 
 
+def carrier_faults_max_7d(trials):
+    """Maximum carrier-fault writes for one carrier in one simulated day."""
+    counts = {}
+    for trial in trials:
+        day = trial.get("day")
+        for fault in trial.get("faults", []) or []:
+            carrier_id = fault.get("carrier_id") if isinstance(fault, dict) else fault[0]
+            key = (day, carrier_id)
+            counts[key] = counts.get(key, 0) + 1
+    return max(counts.values(), default=0)
+
+
 MONITORS = {
     "escalation_rate": escalation_rate,     # có sẵn; KHÔNG tính là metric mới của đội
+    "carrier_faults_max_7d": carrier_faults_max_7d,
 }
 STARTER_MONITORS = ("escalation_rate",)
