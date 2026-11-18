@@ -101,3 +101,30 @@ Vai C · Sản phẩm và kinh doanh: Phiếu A (câu 1.1–1.6, ký tiêu chí 
 
 - Học được: ngưỡng chấp nhận phải viết và ký trước khi xem số, và mỗi ngưỡng cần kèm một hành động nếu trượt; ở S1, lỗi gốc nằm ở dữ liệu (`delivered_date` trống làm tính trễ tới hôm nay) và ở trần lỗi/hãng/ngày, chứ không chỉ ở model.
 - Còn chưa chắc: ngưỡng `pass_rate` 0,90, `pass_k` 0,85 và `roi_min` 0,3 được đặt khi chưa biết kết quả nên có thể quá cao hoặc quá thấp; và vì data là mock nên chưa biết con số thật trong pilot sẽ lệch bao nhiêu.
+
+## HoSyTung-2A202603650
+
+### Phần việc phụ trách
+
+Vai B · Kỹ sư cổng (trace, chỉ số): câu 2.2 và 2.8; truy vết `T-002@55`, ghi nhận phân tích ở Phiếu B mục B2, xây dựng hai ticket hiểm để kiểm tra cổng bằng `--adhoc`, và đánh giá kết quả vòng 1 qua `eval`/`gate`. Vòng 2 theo phân công: bổ sung chỉ số theo dõi ở Phiếu C mục C8, rồi chạy `eval` và `grade` trên thẻ sự cố của nhóm.
+
+### Đóng góp cụ thể
+
+- Chạy trace `T-002` với seed `55`; đối chiếu lời khách khai trễ 5 ngày với tracking ghi nhận 2 ngày. Ghi nhận baseline đã hoàn sai 20.000đ, ghi lỗi hãng oan với 5 ngày và gửi nguyên văn ghi chú khách cho hãng.
+- Điền phân tích nguyên nhân và biện pháp phòng ngừa của ca `T-002@55` vào Phiếu B mục B2.
+- Đề xuất và chạy hai ticket hiểm bằng `--adhoc`: khách phóng đại số ngày trễ và khách yêu cầu bỏ qua chính sách/hoàn toàn bộ đơn. Cả hai được guard chuyển người duyệt trước khi phát sinh ghi sổ.
+- Cung cấp kết quả `eval` baseline và các lần chạy sau cổng; đối chiếu bằng `gate`. Trên mốc `prepared`, 110/110 ticket đạt, hoàn sai 0đ, lỗi hãng oan 0, PII leak 0; chi phí 4.510đ/ticket, ROI 1,22 và queue stuck 0.
+- Có dùng trợ lý AI để hỗ trợ phân tích trace và biên tập Phiếu B; các lệnh chạy và kết quả được thực hiện/kiểm tra trong repo của nhóm.
+
+### Bằng chứng
+
+- Phiếu B mục B2; trace `T-002@55`.
+- Baseline: `R-base-before-20261118-152646-bde05c`.
+- Sau cổng: `R-base-after-20261118-161334-5d7dab`; mốc chốt: `R-base-prepared-20261118-161830-5d7dab`.
+- Gate sau cổng và prepared: cả hai đều xác nhận các ngưỡng đã ký đạt, không có ca mới hỏng so baseline.
+- Commit phần CP3: `b3e902e`; merge nhóm: `8307617`.
+
+### Exit ticket
+
+- Học được: trace cần tách dữ liệu khách tự khai khỏi nguồn sự thật trong tracking; nhìn thấy một lần thực thi thành công chưa đủ, cần kiểm cả các tác dụng phụ như ghi lỗi hãng và payload gửi bên thứ ba.
+- Còn chưa chắc: mức độ cổng giữ được an toàn trước thẻ sự cố chưa được xác nhận; cần chạy đúng thẻ của nhóm và bổ sung chỉ số theo dõi ở CP4.
