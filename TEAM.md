@@ -75,3 +75,29 @@ Vai D · Vận hành và pháp lý: câu 2.4 (HAZOP vòng 1, checklist 9 nhóm v
 
 - Học được: cổng vận hành phải có người chịu trách nhiệm, ngưỡng đo và thao tác dừng rõ ràng, khớp config.
 - Còn chưa chắc: hàng chờ, chi phí và mức rủi ro còn lại khi nhận đúng thẻ sự cố của bàn; cần kiểm bằng report ba mốc.
+
+## DaoTruongVu-2A202603721
+
+### Phần việc phụ trách
+
+Vai C · Sản phẩm và kinh doanh: Phiếu A (câu 1.1–1.6, ký tiêu chí trong `config/acceptance_criteria.json`); Phiếu B mục B3 (câu 2.3, bản đồ dữ liệu và ví dụ drift), B6 (câu 2.5, lăng kính kinh doanh của pre-mortem), B7.4 (câu 2.9, mục `business` trong `config/operating_gates.json`); đồng thời PIC ký tiêu chí và quyết định v1 (B8). Vòng 2 (thẻ S1): đọc chi phí mỗi ticket, ROI và trần tiền, câu 3.2 (specification, C5) và quyết định v2 (C12).
+
+### Đóng góp cụ thể
+
+- Điền các ngưỡng bắt buộc, nên có, `business_ops`, `stop_condition` và bốn dòng `decision_rule` cho Bản tiêu chí. Cả bàn đồng ý các con số rồi mới ký; ba chỉ số an toàn đặt 0, chi phí tối đa 7.000đ/ticket thấp hơn làm tay 10.000đ. Chạy `lab10.criteria sign`, commit và push trước lần `eval` đầu tiên của bàn.
+- Điền Phiếu A: mục tiêu hệ thống, mục tiêu nhìn từ chị Oanh và chị Hạnh, thước đo bước "ghi lỗi hãng" và telemetry production, câu 1.5 (chọn b), câu tiêu chí "Nếu … thì chúng tôi sẽ …", ranh giới đầu ra.
+- Điền `business` trong `config/operating_gates.json`: trần hoàn 1.600.000đ/ngày (80% ngân sách Finance 2.000.000đ), ngân sách tiền máy 1.500đ/ticket, phạm vi pilot `all`, ROI tối thiểu 0,3; mỗi số có một câu lý do trong B7.4.
+- Điền B3: bản đồ dữ liệu và ví dụ drift chính sách `REFUND-v3` sang `REFUND-v4` ngày 2026-12-01. Viết bản nháp pre-mortem B6 (sáu lý do, đủ bốn lăng kính, chọn ba cổng) để Kỹ sư cổng có căn cứ viết cổng.
+- Có dùng trợ lý AI (Claude) để đọc đề, đọc dữ liệu `data/world.json`, soạn nháp các mục trên và kiểm tra hash, cú pháp JSON. Các ngưỡng và quyết định do bàn xác nhận trước khi ký và chốt; tôi chịu trách nhiệm cho nội dung đã nộp.
+- Hỗ trợ nhóm tìm lỗi `integrity`: nguyên nhân là `core.autocrlf=true` trên Windows đổi LF thành CRLF làm lệch hash file bị khoá.
+
+### Bằng chứng
+
+- Commit: `dc4d954` (Sign acceptance criteria, ký lúc 2026-11-18T15:14:32), `ac605db` (Phiếu A), `903d7a3` (`business`, B3, B7.4), `8b6e1c8` (B6).
+- File: `config/acceptance_criteria.json` và `.lock` (hash `881d7704…`, `lab10.criteria verify` báo `ok: true`); `config/operating_gates.json` mục `business`; `templates/form-a-criteria.md`; `templates/form-b-evaluation-gates.md` (B3, B6, B7.4).
+- Mã lần chạy thẻ S1 làm căn cứ cho C5 (bản đo của tôi): base `R-S1-before-20261118-163939-6c547b`, prepared `R-S1-prepared-20261118-163940-6c547b`; các mã after và quyết định v2 xem Phiếu C của bàn.
+
+### Exit ticket
+
+- Học được: ngưỡng chấp nhận phải viết và ký trước khi xem số, và mỗi ngưỡng cần kèm một hành động nếu trượt; ở S1, lỗi gốc nằm ở dữ liệu (`delivered_date` trống làm tính trễ tới hôm nay) và ở trần lỗi/hãng/ngày, chứ không chỉ ở model.
+- Còn chưa chắc: ngưỡng `pass_rate` 0,90, `pass_k` 0,85 và `roi_min` 0,3 được đặt khi chưa biết kết quả nên có thể quá cao hoặc quá thấp; và vì data là mock nên chưa biết con số thật trong pilot sẽ lệch bao nhiêu.
