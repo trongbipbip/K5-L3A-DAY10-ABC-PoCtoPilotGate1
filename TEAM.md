@@ -22,13 +22,13 @@ Ghi `members` trong `submission/submission.json` theo dạng `"HoVaTen-MSSV"`, k
 
 ## Cá nhân
 
-Mỗi thành viên tự viết một mục bên dưới (chép mẫu, đổi tiêu đề thành họ tên không dấu và MSSV, ví dụ `## NguyenVanAn-20241234`).
+ 
 
-## HoVaTen-MSSV
+## NguyenNhoTrong-2A202603666
 
 ### Phần việc phụ trách
 
-Vai trong bàn; câu nào của đề, mục nào của phiếu A/B/C, file nào (`lab10/guards.py`, `config/operating_gates.json`, …).
+Vai A – Kỹ sư cổng (cổng code), GitHub: `trongbipbip`. Phụ trách câu 2.1, 2.6, 2.7; các phần C7–C9 của Phiếu C; file chính `lab10/guards.py` và phối hợp với `lab10/monitors.py`.
 
 Bàn có 4 người, lab có 3 vai, nên vai Kỹ sư cổng chia cho hai người (A, B). Tên thật của A–D điền ở bảng "Thành viên" phía trên.
 
@@ -43,15 +43,21 @@ Bàn có 4 người, lab có 3 vai, nên vai Kỹ sư cổng chia cho hai ngư�
 
 ### Đóng góp cụ thể
 
-...
+- Đọc yêu cầu lab, rubric, TEAM.md và phân tích thẻ sự cố S1 trước khi sửa.
+- Bổ sung cổng xử lý ticket lệch số ngày trễ so với tracking: ghi trace mismatch và viết lại đầu vào để trợ lý dùng số liệu tracking.
+- Bổ sung cổng chuyển người duyệt khi trạng thái là `DELIVERED` nhưng thiếu `delivered_date`, áp dụng cho cả hoàn tiền và ghi lỗi hãng.
+- Bổ sung giới hạn số lần tự động ghi lỗi carrier trong ngày theo `ops_limits.max_auto_strikes_per_carrier_per_day`, tránh ghi lỗi oan khi carrier đã chạm cap.
+- Phối hợp bổ sung monitor `carrier_faults_max_7d`, hoàn thiện fault tree sau sửa và ghi bằng chứng vào Phiếu C.
+- Chạy kiểm tra public và đánh giá S1 sau sửa; public `Ran 13 tests ... OK`, report sau sửa đạt pass_rate 1.0, pass^k 1.0, wrongful refund 0, wrongful carrier faults 0, PII 0.
+- Dùng trợ lý AI để đọc tài liệu, rà yêu cầu và hỗ trợ kiểm tra câu chữ/code; các thay đổi và quyết định cuối cùng được đối chiếu với output của lab và thống nhất trong nhóm.
 
 ### Bằng chứng
 
-Mã commit, mã lần chạy (`runs/<mã>`), dòng trong phiếu.
+`lab10/guards.py`, `lab10/monitors.py`, `templates/form-c-incident.md` mục C7–C12; mã chạy `R-S1-grade-20261118-174559-b2dd9a`, `R-S1-before-20261118-174559-b2dd9a`, `R-S1-prepared-20261118-174559-b2dd9a`, `R-S1-after-20261118-174559-b2dd9a`; báo cáo cuối ghi integrity, criteria, visible, regression và monitor đều đạt.
 
 ### Exit ticket
 
-Một điều học được, một điều còn chưa chắc.
+Học được: cổng code phải kiểm tra dữ liệu tracking và giới hạn tác động trước khi cho phép thao tác có hậu quả, đồng thời phải giữ khả năng xử lý ca đúng. Còn chưa chắc: dữ liệu tracking ngoài pilot thật có thể thiếu hoặc cập nhật trễ, nên cần tiếp tục đo wrongful refund, wrongful carrier fault và `carrier_faults_max_7d` khi có dữ liệu thật.
 
 ## BuiQuangHieu-2A202603639
 
