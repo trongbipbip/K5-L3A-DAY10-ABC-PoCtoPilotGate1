@@ -75,3 +75,41 @@ Vai D · Vận hành và pháp lý: câu 2.4 (HAZOP vòng 1, checklist 9 nhóm v
 
 - Học được: cổng vận hành phải có người chịu trách nhiệm, ngưỡng đo và thao tác dừng rõ ràng, khớp config.
 - Còn chưa chắc: hàng chờ, chi phí và mức rủi ro còn lại khi nhận đúng thẻ sự cố của bàn; cần kiểm bằng report ba mốc.
+
+## HoSyTung-2A202603650
+
+### Phần việc phụ trách
+
+Vai B · Kỹ sư cổng (trace, chỉ số): câu 2.2 và 2.8; truy vết `T-002@55`, ghi nhận phân tích ở Phiếu B mục B2, xây dựng hai ticket hiểm để kiểm tra cổng bằng `--adhoc`, và đánh giá kết quả vòng 1 qua `eval`/`gate`. Vòng 2 theo phân công: bổ sung chỉ số theo dõi ở Phiếu C mục C8, rồi chạy `eval` và `grade` trên thẻ sự cố của nhóm.
+
+Bàn có 4 người, lab có 3 vai, nên vai Kỹ sư cổng chia cho hai người (A, B). Tên thật của A–D điền ở bảng "Thành viên" phía trên.
+
+| Người | Vai | Câu của đề | File chính | Công việc |
+| ----- | --- | ---------- | ---------- | --------- |
+| A | Kỹ sư cổng (cổng code) | 2.1, 2.6, 2.7 | `lab10/guards.py` | Chạy lệnh 2 và 4 trên bộ base; viết 2–3 cổng trong `pre_guard` / `write_gate`; thêm hai bước tránh rò rỉ dữ liệu. Vòng 2: sửa nhánh code theo thẻ sự cố (C7). |
+| B | Kỹ sư cổng (trace, chỉ số) | 2.2, 2.8 | `lab10/monitors.py` | Dò `T-002@55` bằng lệnh 3 và điền bảng soát lỗi (B2); viết tính chất cùng hai ticket hiểm chạy bằng `--adhoc`. Vòng 2: thêm ít nhất một chỉ số theo dõi mới (C8), chạy `eval` và `grade`. |
+| C | Sản phẩm và kinh doanh | 1.1–1.6, 2.3, 2.9 | `config/acceptance_criteria.json`, `config/operating_gates.json` (mục `business`) | Phiếu A: viết và ký tiêu chí (lệnh 1, chỉ ký một lần); bản đồ dữ liệu và drift; điền trần hoàn tiền, ngân sách chi phí, phạm vi pilot, ROI. Chốt quyết định v1 (B8) và v2 (C12). |
+| D | Vận hành và pháp lý | 2.4, 2.10 | `config/operating_gates.json` (mục `operations`, `legal`), `submission/submission.json` | HAZOP vòng 1 và checklist 9 nhóm (mỗi dòng một người phụ trách có tên); điền người trực, hàng đợi, điều kiện dừng, dữ liệu cá nhân; viết runbook. Vòng 2: risk register (C10), cập nhật checklist và runbook (C11); gom bài bằng lệnh 7. |
+
+**Làm chung cả bàn:** pre-mortem (2.5, B6), phân tích sự cố (3.1–3.4), quyết định Gate 1, demo.
+
+### Đóng góp cụ thể
+
+- Chạy trace `T-002` với seed `55`; đối chiếu lời khách khai trễ 5 ngày với tracking ghi nhận 2 ngày. Ghi nhận baseline đã hoàn sai 20.000đ, ghi lỗi hãng oan với 5 ngày và gửi nguyên văn ghi chú khách cho hãng.
+- Điền phân tích nguyên nhân và biện pháp phòng ngừa của ca `T-002@55` vào Phiếu B mục B2.
+- Đề xuất và chạy hai ticket hiểm bằng `--adhoc`: khách phóng đại số ngày trễ và khách yêu cầu bỏ qua chính sách/hoàn toàn bộ đơn. Cả hai được guard chuyển người duyệt trước khi phát sinh ghi sổ.
+- Cung cấp kết quả `eval` baseline và các lần chạy sau cổng; đối chiếu bằng `gate`. Trên mốc `prepared`, 110/110 ticket đạt, hoàn sai 0đ, lỗi hãng oan 0, PII leak 0; chi phí 4.510đ/ticket, ROI 1,22 và queue stuck 0.
+- Có dùng trợ lý AI để hỗ trợ phân tích trace và biên tập Phiếu B; các lệnh chạy và kết quả được thực hiện/kiểm tra trong repo của nhóm.
+
+### Bằng chứng
+
+- Phiếu B mục B2; trace `T-002@55`.
+- Baseline: `R-base-before-20261118-152646-bde05c`.
+- Sau cổng: `R-base-after-20261118-161334-5d7dab`; mốc chốt: `R-base-prepared-20261118-161830-5d7dab`.
+- Gate sau cổng và prepared: cả hai đều xác nhận các ngưỡng đã ký đạt, không có ca mới hỏng so baseline.
+- Commit phần CP3: `b3e902e`; merge nhóm: `8307617`.
+
+### Exit ticket
+
+- Học được: trace cần tách dữ liệu khách tự khai khỏi nguồn sự thật trong tracking; nhìn thấy một lần thực thi thành công chưa đủ, cần kiểm cả các tác dụng phụ như ghi lỗi hãng và payload gửi bên thứ ba.
+- Còn chưa chắc: mức độ cổng giữ được an toàn trước thẻ sự cố chưa được xác nhận; cần chạy đúng thẻ của nhóm và bổ sung chỉ số theo dõi ở CP4.
