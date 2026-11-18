@@ -251,11 +251,14 @@ Bốn lăng kính (bắt buộc đủ cả bốn; dự án AI hay chết ở ba 
 
 | Lý do thất bại (viết ở thì quá khứ) | Lăng kính | Kiểm được hôm nay? (trace / data / config nào) | Thành cổng phòng ngừa nào (code hay config) / hay vào risk register |
 |---|---|---|---|
-| | Kỹ thuật | | |
-| | Kinh doanh | | |
-| | Con người và vận hành | | |
-| | Pháp lý | | |
-| | | | |
+| Trợ lý tin số ngày trễ khách viết trong ticket thay vì tracking, nên tính tiền và ghi lỗi hãng sai (hãng bị phạt oan) | Kỹ thuật | Trace `T-002@55`: so `proposal.delay_days_used` với `tracking.db_delay_days` | **Cổng 1 (code):** `write_gate` cho `issue_refund` và `file_carrier_fault`, so độ trễ với tracking DB, lệch thì chặn hoặc chuyển người |
+| Trợ lý tự hoàn quá nhiều trong một ngày (nhiều khoản nhỏ cho một khách, hoặc ngày sale), vượt ngân sách Finance 2.000.000đ/ngày mà không ai biết | Kinh doanh | `ops_limits.daily_auto_refund_budget_vnd`, `max_auto_refund_per_customer_per_day_vnd`; dòng "tổng tiền hoàn so với trần" trong report | **Cổng 2 (config + code):** `business.daily_refund_cap_vnd` = 1.600.000; `write_gate` chuyển người khi cộng dồn vượt trần |
+| Mỗi ticket tốn cả tiền máy lẫn công người duyệt, nên với đơn giá trị nhỏ hoặc kho sỉ `HCM-B2B` chi phí lớn hơn làm tay (10.000đ) và ROI âm | Kinh doanh | Khối "theo kho và hãng" trong report: chi phí mỗi ticket và ROI từng kho | Config: `cost_budget_per_ticket_vnd` = 1.500 và `pilot_scope` (cắt kho nếu cần ở vòng 2); chưa thành cổng code, ghi vào risk register |
+| Ngày tăng gấp ba lượng ticket, một người duyệt chỉ làm 6 ca/giờ nên hàng chờ ùn, ca quá 60 phút không ai xử lý và nhân viên mất tin vào trợ lý | Con người và vận hành | `ops_facts.review_capacity_per_reviewer_per_hour`, `ops_limits.review_sla_minutes`; dòng `queue_stuck` và "thời gian chờ" trong report | Config (vai Vận hành): `reviewers_on_shift`, `max_queue_wait_minutes`; mục Giờ cao điểm trong runbook; risk register |
+| Thông báo cho hãng (`notify_carrier`) kèm số điện thoại hoặc địa chỉ của khách, nên dữ liệu cá nhân rời hệ thống mà khách không biết | Pháp lý | `policies[].carrier_notice_fields` chỉ cho phép `order_id`, `parcel_id`, `district`, `delay_days`; `pii_leaks` trong report | **Cổng 3 (config + code):** `legal.pii_fields_blocked_to_third_party` và `write_gate` bỏ các trường cá nhân khỏi `notify_carrier` |
+| Từ 2026-12-01 chính sách đổi sang REFUND-v4 (hạn mức tự động 100.000đ, bất khả kháng không ghi lỗi hãng), trợ lý vẫn áp luật cũ nên hoàn vượt hạn mức và ghi lỗi oan | Kinh doanh | `policies` (REFUND-v3 → v4, `effective_from` 2026-12-01); xem B3 (ví dụ drift) | Risk register; theo dõi bằng chỉ số ở vòng 2 (ghi lỗi có `delay_cause = FORCE_MAJEURE`) |
+
+**Chọn 3 lý do thành cổng ngay hôm nay:** Cổng 1 (tính tiền theo tracking), Cổng 2 (trần tiền hoàn mỗi ngày) và Cổng 3 (không gửi dữ liệu cá nhân cho hãng). Ba lý do còn lại (chi phí theo kho, ùn hàng chờ, đổi chính sách) vào risk register, và Con người và vận hành xử lý bằng con số trong config của vai Vận hành. Cả bốn lăng kính đã có ít nhất một dòng; bàn có thể bổ sung thêm lý do ở các lăng kính khác.
 
 ---
 
