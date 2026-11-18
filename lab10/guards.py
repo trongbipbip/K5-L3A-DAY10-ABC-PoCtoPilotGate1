@@ -34,9 +34,111 @@ from .tools import Verdict
 
 
 def pre_guard(ctx):
-    return Verdict.allow()
+    policies = ctx.tools.lookup_policies()
+    policy = H.effective_policy(policies, ctx.as_of)
+
+    if policy is None:
+        return Verdict.escalate("Không tìm thấy chính sách hoàn tiền đang hiệu lực")
+
+    # Ghim phiên bản theo ngày hiệu lực, thay vì tin cờ index_active.
+    return Verdict.allow(policy_id=policy["policy_id"])
 
 
 def write_gate(ctx, action):
-    # action = {"tool": "issue_refund", "ticket_id":..., "order_id":..., "amount_vnd":..., "payer":..., ...}
+    tool = action.get("tool")
+
+    if tool == "issue_refund":
+        order = ctx.tools.lookup_order(action.get("order_id"))
+        if order is None or order.get("customer_id") != ctx.ticket.get("customer_id"):
+            return Verdict.escalate("Không xác minh được đơn và chủ đơn trước khi hoàn tiền")
+
+        policy = H.effective_policy(ctx.tools.lookup_policies(), ctx.as_of)
+        if policy is None:
+            return Verdict.escalate("Không tìm thấy chính sách hiệu lực để xác minh tiền hoàn")
+
+        parcel = H.ticket_parcel(order, ctx.ticket, ctx.as_of)
+        delay_days = H.db_delay_days(parcel, ctx.as_of)
+        cause = parcel.get("delay_cause") or ("CARRIER" if delay_days > 0 else None)
+        expected = H.entitlement_vnd(policy, order, delay_days, cause)
+        proposed = int(action.get("amount_vnd", 0))
+
+        if proposed != expected:
+            ctx.log(
+                "refund_mismatch",
+                order_id=order["order_id"],
+                proposed_vnd=proposed,
+                expected_vnd=expected,
+                tracking_delay_days=delay_days,
+            )
+            return Verdict.escalate(
+                "Số tiền đề xuất không khớp tracking và chính sách; chuyển người duyệt"
+            )
+
+    elif tool == "file_carrier_fault":
+        order = ctx.tools.lookup_order(action.get("order_id"))
+        if order is None:
+            return Verdict.deny("Không ghi lỗi hãng khi không tìm thấy đơn")
+
+        policy = H.effective_policy(ctx.tools.lookup_policies(), ctx.as_of)
+        parcel = H.ticket_parcel(order, ctx.ticket, ctx.as_of)
+        if policy is None or parcel is None:
+            return Verdict.deny("Thiếu dữ liệu để xác minh lỗi hãng")
+
+        delay_days = H.db_delay_days(parcel, ctx.as_of)
+        recorded_cause = parcel.get("delay_cause")
+        supported = (
+            recorded_cause in policy["fault_causes"]
+            and H.carrier_at_fault(policy, parcel, delay_days)
+        )
+        if not supported:
+            ctx.log(
+                "carrier_fault_denied",
+                order_id=order["order_id"],
+                parcel_id=parcel["parcel_id"],
+                tracking_delay_days=delay_days,
+                recorded_cause=recorded_cause,
+            )
+            return Verdict.deny("Tracking không đủ căn cứ để ghi lỗi cho hãng")
+
+        # Agent có thể chọn kiện đầu tiên nhưng gắn số ngày trễ của kiện khác.
+        # Chuẩn hóa lệnh theo kiện trễ nhất và dữ liệu tracking có thẩm quyền.
+        corrected = {
+            "parcel_id": parcel["parcel_id"],
+            "carrier_id": parcel["carrier_id"],
+            "driver_id": parcel.get("driver_id"),
+            "delay_days": delay_days,
+        }
+        if any(action.get(key) != value for key, value in corrected.items()):
+            ctx.log(
+                "carrier_fault_corrected",
+                order_id=order["order_id"],
+                parcel_id=parcel["parcel_id"],
+                tracking_delay_days=delay_days,
+            )
+            return Verdict.modify(
+                "Đã sửa thông tin lỗi hãng theo kiện và tracking có thẩm quyền",
+                **corrected,
+            )
+
+    elif tool == "notify_carrier":
+        payload = action.get("payload") or {}
+        blocked = set(
+            ((ctx.gates or {}).get("legal") or {}).get(
+                "pii_fields_blocked_to_third_party"
+            ) or []
+        )
+        # Không gửi nguyên văn ticket hoặc thông tin liên hệ người nhận cho hãng.
+        blocked.update({"customer_note", "recipient_contact", "phone", "name"})
+        safe_payload = {key: value for key, value in payload.items() if key not in blocked}
+
+        if safe_payload != payload:
+            ctx.log(
+                "carrier_payload_sanitized",
+                removed_fields=sorted(set(payload) - set(safe_payload)),
+            )
+            return Verdict.modify(
+                "Đã loại nội dung ticket và trường dữ liệu cá nhân khỏi thông báo hãng",
+                payload=safe_payload,
+            )
+
     return Verdict.allow()
