@@ -16,7 +16,7 @@ Họ tên đầy đủ và MSSV của **mọi** thành viên; thêm dòng nếu 
 |   1 |           |      |     |             |
 |   2 |           |      |     |             |
 |   3 |           |      |     |             |
-|   4 |           |      |     |             |
+|   4 | Bùi Quang Hiếu | 2A202603639 | Vận hành và pháp lý (D) |             |
 
 Ghi `members` trong `submission/submission.json` theo dạng `"HoVaTen-MSSV"`, khớp bảng trên.
 
@@ -52,3 +52,26 @@ Mã commit, mã lần chạy (`runs/<mã>`), dòng trong phiếu.
 ### Exit ticket
 
 Một điều học được, một điều còn chưa chắc.
+
+## BuiQuangHieu-2A202603639
+
+### Phần việc phụ trách
+
+Vai D · Vận hành và pháp lý: câu 2.4 (HAZOP vòng 1, checklist 9 nhóm việc tại Phiếu B mục B4–B5); câu 2.10 (cổng `operations`, `legal` trong `config/operating_gates.json`, runbook 1–3 và giờ cao điểm tại B7.5–B7.6). Vòng 2: risk register C10, cập nhật checklist và runbook C11; tổng hợp `submission/submission.json` và chạy lệnh 7 sau khi cả bàn hoàn tất các mốc trước.
+
+### Đóng góp cụ thể
+
+- Đã đọc đề, rubric, hướng dẫn và dữ liệu vận hành để xác định các mốc phụ thuộc trước khi điền phần D.
+- Đã điền tên, MSSV, vai và mục cá nhân trong `TEAM.md`.
+- Có dùng trợ lý AI để đọc tài liệu, soát yêu cầu và hỗ trợ phần việc D; các ngưỡng và quyết định phải được bàn xác nhận theo dữ liệu trước khi ghi.
+- Đã điền `operations` và `legal` trong `config/operating_gates.json` theo `data/world.json` và tiêu chí đã ký; viết runbook 1–3 và giờ cao điểm tại Phiếu B mục B7.5–B7.6. Có dùng trợ lý AI soạn và kiểm tra phần này; bàn cần xác nhận các ngưỡng vận hành trước khi chốt vòng 1.
+- B4 đã được thành viên khác điền; đã điền B5 với chín PIC có tên trong dữ liệu `staff` hoặc tên thành viên đã biết, phân biệt trạng thái Xong/Chưa theo bằng chứng hiện có. Chờ mốc prepared và thẻ sự cố đã bốc, báo cáo sau sửa trước khi điền C10–C11, `submission/submission.json` và gom bài.
+
+### Bằng chứng
+
+- `TEAM.md` (bảng thành viên và mục cá nhân này); `config/operating_gates.json` (`operations`, `legal`); `templates/form-b-evaluation-gates.md` (B5, B7.5–B7.6). B5 trỏ tới các mã chạy base `R-base-before-20261118-152646-bde05c` và after `R-base-after-20261118-155059-1107eb` do nhóm ghi ở B0. Mã commit sẽ bổ sung sau khi nhóm chốt các mốc.
+
+### Exit ticket
+
+- Học được: cổng vận hành phải có người chịu trách nhiệm, ngưỡng đo và thao tác dừng rõ ràng, khớp config.
+- Còn chưa chắc: hàng chờ, chi phí và mức rủi ro còn lại khi nhận đúng thẻ sự cố của bàn; cần kiểm bằng report ba mốc.
